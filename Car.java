@@ -19,8 +19,8 @@ public class Car {
 
 	@Override
 	public String toString() {
-		/*return "Car [street=" + street + ", speed=" + speed + ", position="
-				+ position + ", city=" + city + "]";*/
+		//return "Car [street=" + street + ", speed=" + speed + ", position="
+		//		+ position + ", city=" + city + "]";
 		return "Car [street=" + street + ", average_speed=" + (position / steps) + "]";
 	}
 

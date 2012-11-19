@@ -3,11 +3,11 @@ import java.util.*;
 public class City {
 	// EVEN STREETS ARE HORIZONTAL (0-indexed), ODD STREETS ARE VERTICAL
 
-	public static final int HORIZONTAL_STREETS = 2;
-	public static final int VERTICAL_STREETS = 2;
+	public static final int HORIZONTAL_STREETS = 4;
+	public static final int VERTICAL_STREETS = 4;
 
-	public static final double HORIZONTAL_STREET_LENGTH = 1000.0; // in meters
-	public static final double VERTICAL_STREET_LENGTH = 1000.0; // in meters
+	public static final double HORIZONTAL_STREET_LENGTH = 900.0; // in meters
+	public static final double VERTICAL_STREET_LENGTH = 900.0; // in meters
 
 	public static final double CAR_GEN_PROB = 0.25;
 
@@ -17,7 +17,6 @@ public class City {
 	Random rand = new Random();
 
 	public City () {
-		// TODO: Fill this in
 
 		this.cars = new Vector<Vector<Car>>();
 		for (int i = 0; i < HORIZONTAL_STREETS + VERTICAL_STREETS; i++) {
@@ -28,7 +27,7 @@ public class City {
 		for (int i = 0; i < VERTICAL_STREETS; i++) {
 			this.stoplights.add(new Vector<Light>());
 			for (int j = 0; j < HORIZONTAL_STREETS; j++) {
-				this.stoplights.elementAt(i).add(new Light());
+				this.stoplights.elementAt(i).add(new Light(2*i+1, 2*j));
 			}
 		}
 	}
@@ -49,9 +48,9 @@ public class City {
 	
 	public double getLightPosition(int street, int cross) {
 		if (street % 2 == 0) {
-			return (((double) cross - 1) / 2) / (VERTICAL_STREETS + 1);
+			return (((double) cross - 1) / 2) / (VERTICAL_STREETS + 1) * HORIZONTAL_STREET_LENGTH;
 		} else {
-			return ((double) cross / 2) / (HORIZONTAL_STREETS + 1);
+			return ((double) cross / 2) / (HORIZONTAL_STREETS + 1) * VERTICAL_STREET_LENGTH;
 		}
 	}
 	
@@ -125,14 +124,14 @@ public class City {
 					double x = rand.nextDouble();
 					if (x < CAR_GEN_PROB) {
 						this.cars.elementAt(street).add(new Car(this, street, firstCar.getSpeed()));
-						System.out.println("Added car: " + this.cars.elementAt(street).lastElement().toString());
+						//System.out.println("Added car: " + this.cars.elementAt(street).lastElement().toString());
 					}
 				}
 			} else {
 				double x = rand.nextDouble();
 				if (x < CAR_GEN_PROB) {
 					this.cars.elementAt(street).add(new Car(this, street, Car.MAX_SPEED));
-					System.out.println("Added car: " + this.cars.elementAt(street).lastElement().toString());
+					//System.out.println("Added car: " + this.cars.elementAt(street).lastElement().toString());
 				}
 			}
 		}
@@ -143,6 +142,16 @@ public class City {
 				stoplights.elementAt(i).elementAt(j).step();
 			}
 		}
+		
+		// For debugging: print out street 0
+		/*
+		for (int i = 0; i < cars.elementAt(0).size(); i++) {
+			System.err.println("Car on street 0: " + cars.elementAt(0).elementAt(i));
+		}
+		for (int j = 0; j < stoplights.elementAt(0).size(); j++) {
+			System.err.println("Light on street 0 at street " + (2 * j + 1) + " is " + stoplights.elementAt(0).elementAt(j).getState(0));
+		}
+		*/
 	}
 
 	// Returns the car directly in front of this one, on the given street

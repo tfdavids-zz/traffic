@@ -7,12 +7,19 @@ public class Light {
 	
 	private LightState verticalState; 
 	private LightState horizontalState;
+	
 	private int counter;
 	
-	public Light() {
+	private int verticalStreet;
+	private int horizontalStreet;
+	
+	public Light(int verticalStreet, int horizontalStreet) {
 		this.verticalState = LightState.GREEN;
 		this.horizontalState = LightState.RED;
 		this.counter = 0;
+		
+		this.verticalStreet = verticalStreet;
+		this.horizontalStreet = horizontalStreet;
 	}
 	
 	public LightState getState(int street) {
