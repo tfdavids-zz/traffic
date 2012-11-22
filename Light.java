@@ -10,8 +10,8 @@ public class Light {
 	
 	private int counter;
 	
-	private int verticalStreet;
-	private int horizontalStreet;
+	private final int verticalStreet;
+	private final int horizontalStreet;
 	
 	public Light(int verticalStreet, int horizontalStreet) {
 		this.verticalState = LightState.GREEN;
@@ -20,6 +20,16 @@ public class Light {
 		
 		this.verticalStreet = verticalStreet;
 		this.horizontalStreet = horizontalStreet;
+	}
+	
+	// Use these methods so we can keep track of when the light is using this information --
+	// in some cases, we won't want it to know its street
+	private int getVerticalStreet() {
+		return verticalStreet;
+	}
+	
+	private int getHorizontalStreet() {
+		return horizontalStreet;
 	}
 	
 	public LightState getState(int street) {

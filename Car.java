@@ -19,9 +19,9 @@ public class Car {
 
 	@Override
 	public String toString() {
-		//return "Car [street=" + street + ", speed=" + speed + ", position="
-		//		+ position + ", city=" + city + "]";
-		return "Car [street=" + street + ", average_speed=" + (position / steps) + "]";
+		return "Car [street=" + street + ", speed=" + speed + ", position="
+				+ position + ", city=" + city + "]";
+		//return "Car [street=" + street + ", average_speed=" + (position / steps) + "]";
 	}
 
 	public Car(City city, int street, double speed) {
@@ -32,9 +32,7 @@ public class Car {
 		this.steps = 0;
 	}
 
-	public void step() {
-		// TODO: finish implementing
-		
+	public void step() {		
 		position += speed;
 
 		if (street % 2 == 0) {
@@ -58,8 +56,7 @@ public class Car {
 
 			speed += freeComponent;
 			
-		} else if ((nextVehicle == null && nextLight != null) ||
-				(nextVehicle != null && nextLightPosition < nextVehicle.getPosition())) {
+		} else if (nextVehicle == null && nextLight != null) {
 			// treat the light like a stop sign
 			
 			double currentDistance = nextLightPosition - position;
@@ -72,8 +69,7 @@ public class Car {
 			
 			//System.err.println("Slowing for light on street " + street);
 			
-		} else if ((nextVehicle != null && nextLight == null) ||
-			(nextVehicle != null && nextLightPosition > nextVehicle.getPosition())) {
+		} else if (nextVehicle != null && nextLight == null) {
 
 			double currentDistance = nextVehicle.getPosition() - position;
 			double approachingRate = speed - nextVehicle.getSpeed();
@@ -82,10 +78,32 @@ public class Car {
 			double intComponent = -MAX_ACCEL * Math.pow((JAM_DIST + speed * SAFE_TIME) / currentDistance + speed * approachingRate / (2.0 * Math.pow(MAX_ACCEL * MAX_DECEL, 0.5) * currentDistance), 2);
 
 			speed += freeComponent + intComponent;
-		} 
+		} else {
+			// now we can see both, so whichever one slows us down more should be followed
+			
+			// calculate for light first
+			
+			double currentDistance = nextLightPosition - position;
+			double approachingRate = speed - 0;
+
+			double freeComponent = MAX_ACCEL * (1.0 - Math.pow((speed / MAX_SPEED), 4));
+			double intComponent = -MAX_ACCEL * Math.pow((JAM_DIST + speed * SAFE_TIME) / currentDistance + speed * approachingRate / (2.0 * Math.pow(MAX_ACCEL * MAX_DECEL, 0.5) * currentDistance), 2);
+
+			double lightAccel = freeComponent + intComponent;
+			
+			currentDistance = nextVehicle.getPosition() - position;
+			approachingRate = speed - nextVehicle.getSpeed();
+
+			freeComponent = MAX_ACCEL * (1.0 - Math.pow((speed / MAX_SPEED), 4));
+			intComponent = -MAX_ACCEL * Math.pow((JAM_DIST + speed * SAFE_TIME) / currentDistance + speed * approachingRate / (2.0 * Math.pow(MAX_ACCEL * MAX_DECEL, 0.5) * currentDistance), 2);
+
+			double carAccel = freeComponent + intComponent;
+			
+			if (lightAccel < carAccel) speed += lightAccel;
+			else speed += carAccel;
+		}
 
 		steps++;
-		
 	}
 
 	public double getPosition() {
