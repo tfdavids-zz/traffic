@@ -13,10 +13,13 @@ public class Light {
 	private final int verticalStreet;
 	private final int horizontalStreet;
 	
-	public Light(int verticalStreet, int horizontalStreet) {
+	private City city;
+	
+	public Light(City city, int verticalStreet, int horizontalStreet) {
 		this.verticalState = LightState.GREEN;
 		this.horizontalState = LightState.RED;
 		this.counter = 0;
+		this.city = city;
 		
 		this.verticalStreet = verticalStreet;
 		this.horizontalStreet = horizontalStreet;
@@ -32,9 +35,26 @@ public class Light {
 		return horizontalStreet;
 	}
 	
+	public double getPosition(int street) {
+		if (street == verticalStreet) {
+			return City.VERTICAL_STREET_LENGTH * ((((float)horizontalStreet) / 2) / this.city.HORIZONTAL_STREETS);
+		} else if (street == horizontalStreet) {
+			return City.HORIZONTAL_STREET_LENGTH * ((((float)verticalStreet - 1) / 2) / this.city.VERTICAL_STREETS);
+		} else {
+			System.err.println("Error: bad light access (1)");
+			return 0;
+		}
+	}
+	
 	public LightState getState(int street) {
-		if (street % 2 == 0) return this.horizontalState;
-		else return this.verticalState;
+		if (street == this.horizontalStreet)
+			return this.horizontalState;
+		else if (street == this.verticalStreet)
+			return this.verticalState;
+		else {
+			System.err.println("Error: bad light access (2)");
+			return LightState.RED;
+		}
 	}
 	
 	public void step() {

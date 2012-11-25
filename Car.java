@@ -47,7 +47,10 @@ public class Car {
 
 		Car nextVehicle = getLeader();
 		Light nextLight = city.getNextLight(street, position, speed);
-		double nextLightPosition = city.getNextLightPosition(street, position, speed);
+		double nextLightPosition = 0; // will get set if it gets used
+		if (nextLight != null) {
+			nextLightPosition = nextLight.getPosition(street);
+		}
 		
 		if (nextVehicle == null && nextLight == null) {
 			// no interaction component if we can't see another car

@@ -12,7 +12,7 @@ public class City {
 	public static final double CAR_GEN_PROB = 0.10;
 
 	private Vector<Vector<Car>> cars;
-	private Vector<Vector<Light>> stoplights; // first index of light is vertical street (x-coord), second is horizontal street
+	private Vector<Vector<Light>> stoplights; // first index of light is (vertical street - 1) / 2 (x-coord), second is (horizontal street / 2)
 
 	Random rand = new Random();
 
@@ -27,11 +27,16 @@ public class City {
 		for (int i = 0; i < VERTICAL_STREETS; i++) {
 			this.stoplights.add(new Vector<Light>());
 			for (int j = 0; j < HORIZONTAL_STREETS; j++) {
-				this.stoplights.elementAt(i).add(new Light(2*i+1, 2*j));
+				this.stoplights.elementAt(i).add(new Light(this, 2*i+1, 2*j));
 			}
 		}
 	}
 	
+	/**
+	 * @param street1 A street on the grid
+	 * @param street2 An intersecting street on the grid
+	 * @return The light at the intersection of street1 and street2
+	 */
 	public Light getLight(int street1, int street2) {
 		if (street1 % 2 == street2 % 2) {
 			System.err.println("Error: trying to find intersection of parallel streets");
@@ -45,34 +50,31 @@ public class City {
 		}
 		
 	}
-	
-	public double getLightPosition(int street, int cross) {
-		if (street % 2 == 0) {
-			return (((double) cross - 1) / 2) / (VERTICAL_STREETS + 1) * HORIZONTAL_STREET_LENGTH;
-		} else {
-			return ((double) cross / 2) / (HORIZONTAL_STREETS + 1) * VERTICAL_STREET_LENGTH;
-		}
-	}
-	
+
+	/**
+	 * NOTE: if a car can stop at a yellow light (or red light) it does, otherwise it continues on.
+	 * It uses the equation vf2 = v02 + 2ad to find the stopping distance at the comfortable
+	 * deceleration -- this should be checked.
+	 * 
+	 * @param street
+	 * @param position
+	 * @param speed
+	 * @return The next light that will affect the travel of a car on the given street at
+	 * the given position, traveling at the given speed
+	 */
 	public Light getNextLight(int street, double position, double speed) {
-		// returns the next light that will affect the travel of a car at this location and speed
-		// NOTE: if a car can stop at a yellow light (or red light) it does, otherwise continues on
-		
-		// this method assumes we're going from low-indexed streets to high-indexed streets
-		
-		// I don't know if this works for the model -- I'm using the physics equation vf2 = v02 + 2ad to find the stopping distance at the comfortable acceleration.
-		// It's okay if some cars run yellow lights, but we can't let cars run red lights, and we don't want cars slowing down to stoplights they can't actually
-		// stop at.
 		double stoppingDistance = speed * speed / (2 * Car.MAX_DECEL);
 		
 		if (street % 2 == 1) {
 			for (int i = 0; i < stoplights.elementAt((street - 1) / 2).size(); i++) {
-				if (getLightPosition(street, 2 * i) > position + stoppingDistance && getLight(street, 2 * i).getState(street) == Light.LightState.GREEN)
+				if (getLight(street, 2 * i).getPosition(street) > position + stoppingDistance
+						&& getLight(street, 2 * i).getState(street) != Light.LightState.GREEN)
 					return getLight(street, 2 * i);
 			}
 		} else {
 			for (int i = 0; i < stoplights.size(); i++) {
-				if (getLightPosition(street, 2 * i + 1) > position + stoppingDistance && getLight(street, 2 * i + 1).getState(street) == Light.LightState.GREEN)
+				if (getLight(street, 2 * i + 1).getPosition(street) > position + stoppingDistance
+						&& getLight(street, 2 * i + 1).getState(street) != Light.LightState.GREEN)
 					return getLight(street, 2 * i + 1);
 			}
 		}
@@ -80,23 +82,26 @@ public class City {
 		return null;
 	}
 	
+	// use getNextLight(street, position, speed).getPosition(street) instead
+	/*
 	public double getNextLightPosition(int street, double position, double speed) {
 		double stoppingDistance = speed * speed / (2 * Car.MAX_DECEL);
 		
 		if (street % 2 == 1) {
 			for (int i = 0; i < stoplights.elementAt((street - 1) / 2).size(); i++) {
-				if (getLightPosition((street - 1) / 2, 2 * i) > position + stoppingDistance)
-					return getLightPosition((street - 1) / 2, 2 * i);
+				if (getLight(street, 2 * i).getPosition(street) > position + stoppingDistance)
+					return getLight(street, 2 * i).getPosition(street);
 			}
 		} else {
 			for (int i = 0; i < stoplights.size(); i++) {
-				if (getLightPosition(street / 2, 2 * i + 1) > position + stoppingDistance)
-					return getLightPosition(street / 2, 2 * i + 1);
+				if (getLight(street, 2 * i + 1).getPosition(street) > position + stoppingDistance)
+					return getLight(street, 2 * i + 1).getPosition(street);
 			}
 		}
 		
 		return -1;
 	}
+	*/
 	
 /*
 	public Light.LightState getLightState(int street, int index) {
@@ -152,7 +157,7 @@ public class City {
 			System.err.println("Car on street 0: " + cars.elementAt(0).elementAt(i));
 		}
 		for (int j = 0; j < stoplights.elementAt(0).size(); j++) {
-			System.err.println("Light on street 0 at street " + (2 * j + 1) + " is " + stoplights.elementAt(0).elementAt(j).getState(0));
+			System.err.println("Light on street 0 at street " + (2 * j + 1) + " is " + stoplights.elementAt(j).elementAt(0).getState(0));
 		}
 		
 	}
