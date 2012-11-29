@@ -125,7 +125,6 @@ public class City {
 		}
 
 		// For debugging: print out street 0
-
 		if ((int)(this.time * 10) == ((int)this.time) * 10) {
 
 			for (int i = 0; i < cars.elementAt(0).size(); i++) {
