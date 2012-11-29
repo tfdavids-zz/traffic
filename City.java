@@ -16,7 +16,7 @@ public class City {
 	private Vector<Vector<Light>> stoplights; // first index of light is (vertical street - 1) / 2 (x-coord), second is (horizontal street / 2)
 
 	private double time;
-	
+
 	Random rand = new Random();
 
 	public City () {
@@ -33,10 +33,10 @@ public class City {
 				this.stoplights.elementAt(i).add(new Light(this, 2*i+1, 2*j));
 			}
 		}
-		
+
 		this.time = 0;
 	}
-	
+
 	/**
 	 * @param street1 A street on the grid
 	 * @param street2 An intersecting street on the grid
@@ -47,13 +47,13 @@ public class City {
 			System.err.println("Error: trying to find intersection of parallel streets");
 			return null;
 		}
-		
+
 		if (street1 % 2 == 0) {
 			return this.stoplights.elementAt((street2 - 1) / 2).elementAt(street1 / 2);
 		} else {
 			return this.stoplights.elementAt((street1 - 1) / 2).elementAt(street2 / 2);
 		}
-		
+
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class City {
 	 */
 	public Light getNextLight(int street, double position, double speed) {
 		double stoppingDistance = speed * speed / (2 * Car.MAX_DECEL);
-		
+
 		if (street % 2 == 1) {
 			for (int i = 0; i < stoplights.elementAt((street - 1) / 2).size(); i++) {
 				if (getLight(street, 2 * i).getPosition(street) > position + stoppingDistance
@@ -83,10 +83,10 @@ public class City {
 					return getLight(street, 2 * i + 1);
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	public void step() {
 
 		// First step with each car
@@ -97,14 +97,11 @@ public class City {
 		}
 
 		// Now potentially add new cars
-		/*
 		for (int street = 0; street < this.cars.size(); street++) {
 			if (this.cars.elementAt(street).size() > 0) {
 				Car firstCar = this.cars.elementAt(street).lastElement();
 
 				if (firstCar.getPosition() > Car.VEHICLE_LEN + Car.JAM_DIST) {
-					// TODO: fix the conditional here
-
 					double x = rand.nextDouble();
 					if (x < CAR_GEN_PROB * TIME_STEP) {
 						this.cars.elementAt(street).add(new Car(this, street, firstCar.getSpeed()));
@@ -119,10 +116,6 @@ public class City {
 				}
 			}
 		}
-		*/
-		if (this.time == 0) {
-			this.cars.elementAt(0).add(new Car(this, 0, Car.MAX_SPEED));
-		}
 
 		// Then let each light make its decision
 		for (int i = 0; i < stoplights.size(); i++) {
@@ -130,9 +123,9 @@ public class City {
 				stoplights.elementAt(i).elementAt(j).step();
 			}
 		}
-		
+
 		// For debugging: print out street 0
-		
+
 		if ((int)(this.time * 10) == ((int)this.time) * 10) {
 
 			for (int i = 0; i < cars.elementAt(0).size(); i++) {
@@ -143,10 +136,10 @@ public class City {
 			}
 
 		}
-		
+
 		// Finally, increment time
 		this.time += TIME_STEP;
-		
+
 	}
 
 	// Returns the car directly in front of this one, on the given street
