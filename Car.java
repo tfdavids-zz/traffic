@@ -5,7 +5,7 @@ public class Car {
 	private double speed;
 	private double position;
 	private City city;
-	private int steps;
+	private double time;
 
 	// Parameters for traffic flow
 	public static final double MAX_SPEED = 30.0;
@@ -15,7 +15,7 @@ public class Car {
 	public static final int ACCEL_EXP = 4;
 	public static final double JAM_DIST = 2.0;
 	public static final double VEHICLE_LEN = 5.0;
-
+	
 
 	@Override
 	public String toString() {
@@ -27,86 +27,86 @@ public class Car {
 	public Car(City city, int street, double speed) {
 		this.city = city;
 		this.street = street;
-		this.speed = speed; // this may need to be adjusted -- speed of car immediately in front of it?
+		this.speed = speed;
 		this.position = 0.0;
-		this.steps = 0;
+		this.time = 0.0;
 	}
 
 	public void step() {		
-		position += speed;
+		// First, advance by the amount of the car's speed
+		position += speed * City.TIME_STEP;
 
-		if (street % 2 == 0) {
-			if (position > City.HORIZONTAL_STREET_LENGTH) {
-				city.removeCar(this, street);
-			}
-		} else {
-			if (position > City.VERTICAL_STREET_LENGTH) {
-				city.removeCar(this, street);
-			}
+		// If this takes us beyond the edge of the city, remove the car
+		if (street % 2 == 0 && position > City.HORIZONTAL_STREET_LENGTH) {
+			city.removeCar(this, street);
+		} else if (street % 2 == 1 && position > City.VERTICAL_STREET_LENGTH) {
+			city.removeCar(this, street);
 		}
 
+		// Now figure out where the next car and next light are
 		Car nextVehicle = getLeader();
 		Light nextLight = city.getNextLight(street, position, speed);
 		double nextLightPosition = 0; // will get set if it gets used
 		if (nextLight != null) {
 			nextLightPosition = nextLight.getPosition(street);
 		}
-		
-		if (nextVehicle == null && nextLight == null) {
-			// no interaction component if we can't see another car
-			
-			double freeComponent = MAX_ACCEL * (1.0 - Math.pow((speed / MAX_SPEED), 4));
 
-			speed += freeComponent;
+		/* Four cases: we can't see either a car or a light, we can see just a car,
+		 * we can see just a light, or we can see both.
+		 */
+		if (nextVehicle == null && nextLight == null) {
+			double freeComponent = MAX_ACCEL * (1.0 - Math.pow((speed / MAX_SPEED), 4));
 			
+			speed += freeComponent * City.TIME_STEP;
 		} else if (nextVehicle == null && nextLight != null) {
-			// treat the light like a stop sign
-			
 			double currentDistance = nextLightPosition - position;
 			double approachingRate = speed - 0;
 
 			double freeComponent = MAX_ACCEL * (1.0 - Math.pow((speed / MAX_SPEED), 4));
 			double intComponent = -MAX_ACCEL * Math.pow((JAM_DIST + speed * SAFE_TIME) / currentDistance + speed * approachingRate / (2.0 * Math.pow(MAX_ACCEL * MAX_DECEL, 0.5) * currentDistance), 2);
 
-			speed += freeComponent + intComponent;
-			
-			//System.err.println("Slowing for light on street " + street);
-			
+			speed += (freeComponent + intComponent) * City.TIME_STEP;
 		} else if (nextVehicle != null && nextLight == null) {
-
 			double currentDistance = nextVehicle.getPosition() - position;
 			double approachingRate = speed - nextVehicle.getSpeed();
 
 			double freeComponent = MAX_ACCEL * (1.0 - Math.pow((speed / MAX_SPEED), 4));
 			double intComponent = -MAX_ACCEL * Math.pow((JAM_DIST + speed * SAFE_TIME) / currentDistance + speed * approachingRate / (2.0 * Math.pow(MAX_ACCEL * MAX_DECEL, 0.5) * currentDistance), 2);
 
-			speed += freeComponent + intComponent;
+			speed += (freeComponent + intComponent) * City.TIME_STEP;
 		} else {
-			// now we can see both, so whichever one slows us down more should be followed
-			
-			// calculate for light first
-			
-			double currentDistance = nextLightPosition - position;
-			double approachingRate = speed - 0;
+			// car first
 
-			double freeComponent = MAX_ACCEL * (1.0 - Math.pow((speed / MAX_SPEED), 4));
-			double intComponent = -MAX_ACCEL * Math.pow((JAM_DIST + speed * SAFE_TIME) / currentDistance + speed * approachingRate / (2.0 * Math.pow(MAX_ACCEL * MAX_DECEL, 0.5) * currentDistance), 2);
+			double currentDistanceCar = nextVehicle.getPosition() - position;
+			double approachingRateCar = speed - nextVehicle.getSpeed();
 
-			double lightAccel = freeComponent + intComponent;
-			
-			currentDistance = nextVehicle.getPosition() - position;
-			approachingRate = speed - nextVehicle.getSpeed();
+			double freeComponentCar = MAX_ACCEL * (1.0 - Math.pow((speed / MAX_SPEED), 4));
+			double intComponentCar = -MAX_ACCEL * Math.pow((JAM_DIST + speed * SAFE_TIME) / currentDistanceCar + speed * approachingRateCar / (2.0 * Math.pow(MAX_ACCEL * MAX_DECEL, 0.5) * currentDistanceCar), 2);
 
-			freeComponent = MAX_ACCEL * (1.0 - Math.pow((speed / MAX_SPEED), 4));
-			intComponent = -MAX_ACCEL * Math.pow((JAM_DIST + speed * SAFE_TIME) / currentDistance + speed * approachingRate / (2.0 * Math.pow(MAX_ACCEL * MAX_DECEL, 0.5) * currentDistance), 2);
+			double carAccel = freeComponentCar + intComponentCar;
 
-			double carAccel = freeComponent + intComponent;
-			
-			if (lightAccel < carAccel) speed += lightAccel;
-			else speed += carAccel;
+			// now for light
+
+			double currentDistanceLight = nextLightPosition - position;
+			double approachingRateLight = speed - 0;
+
+			double freeComponentLight = MAX_ACCEL * (1.0 - Math.pow((speed / MAX_SPEED), 4));
+			double intComponentLight = -MAX_ACCEL * Math.pow((JAM_DIST + speed * SAFE_TIME) / currentDistanceLight + speed * approachingRateLight / (2.0 * Math.pow(MAX_ACCEL * MAX_DECEL, 0.5) * currentDistanceLight), 2);
+
+			double lightAccel = freeComponentLight + intComponentLight;
+
+			if (lightAccel < carAccel) {
+				speed += lightAccel * City.TIME_STEP;
+			} else {
+				speed += carAccel * City.TIME_STEP;
+			}
 		}
 
-		steps++;
+		// in rare cases, due to discreteness of time steps, speed can drop fractionally below 0 -- we don't want that
+		speed = Math.max(speed, 0);
+		
+		// Finally, increment time by the proper amount
+		this.time += City.TIME_STEP;
 	}
 
 	public double getPosition() {
@@ -117,6 +117,10 @@ public class Car {
 		return this.speed;
 	}
 	
+	public double getAverageSpeed() {
+		return this.position / this.time;
+	}
+
 	public City getCity() {
 		return this.city;
 	}

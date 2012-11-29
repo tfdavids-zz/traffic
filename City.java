@@ -10,10 +10,13 @@ public class City {
 	public static final double VERTICAL_STREET_LENGTH = 900.0; // in meters
 
 	public static final double CAR_GEN_PROB = 0.10;
+	public static final double TIME_STEP = 0.1;
 
 	private Vector<Vector<Car>> cars;
 	private Vector<Vector<Light>> stoplights; // first index of light is (vertical street - 1) / 2 (x-coord), second is (horizontal street / 2)
 
+	private double time;
+	
 	Random rand = new Random();
 
 	public City () {
@@ -30,6 +33,8 @@ public class City {
 				this.stoplights.elementAt(i).add(new Light(this, 2*i+1, 2*j));
 			}
 		}
+		
+		this.time = 0;
 	}
 	
 	/**
@@ -82,36 +87,6 @@ public class City {
 		return null;
 	}
 	
-	// use getNextLight(street, position, speed).getPosition(street) instead
-	/*
-	public double getNextLightPosition(int street, double position, double speed) {
-		double stoppingDistance = speed * speed / (2 * Car.MAX_DECEL);
-		
-		if (street % 2 == 1) {
-			for (int i = 0; i < stoplights.elementAt((street - 1) / 2).size(); i++) {
-				if (getLight(street, 2 * i).getPosition(street) > position + stoppingDistance)
-					return getLight(street, 2 * i).getPosition(street);
-			}
-		} else {
-			for (int i = 0; i < stoplights.size(); i++) {
-				if (getLight(street, 2 * i + 1).getPosition(street) > position + stoppingDistance)
-					return getLight(street, 2 * i + 1).getPosition(street);
-			}
-		}
-		
-		return -1;
-	}
-	*/
-	
-/*
-	public Light.LightState getLightState(int street, int index) {
-		if (street % 2 == 0) {
-			return stoplights.elementAt(street / 2 + index).getState(street);
-		} else {
-			return stoplights.elementAt(index * VERTICAL_STREETS + (street - 1) / 2).getState(street);
-		}
-	}
-*/
 	public void step() {
 
 		// First step with each car
@@ -122,26 +97,31 @@ public class City {
 		}
 
 		// Now potentially add new cars
+		/*
 		for (int street = 0; street < this.cars.size(); street++) {
 			if (this.cars.elementAt(street).size() > 0) {
 				Car firstCar = this.cars.elementAt(street).lastElement();
 
-				if (firstCar.getPosition() > Car.VEHICLE_LEN + 10.0) {
+				if (firstCar.getPosition() > Car.VEHICLE_LEN + Car.JAM_DIST) {
 					// TODO: fix the conditional here
 
 					double x = rand.nextDouble();
-					if (x < CAR_GEN_PROB) {
+					if (x < CAR_GEN_PROB * TIME_STEP) {
 						this.cars.elementAt(street).add(new Car(this, street, firstCar.getSpeed()));
 						System.out.println("Added car: " + this.cars.elementAt(street).lastElement().toString());
 					}
 				}
 			} else {
 				double x = rand.nextDouble();
-				if (x < CAR_GEN_PROB) {
+				if (x < CAR_GEN_PROB * TIME_STEP) {
 					this.cars.elementAt(street).add(new Car(this, street, Car.MAX_SPEED));
 					System.out.println("Added car: " + this.cars.elementAt(street).lastElement().toString());
 				}
 			}
+		}
+		*/
+		if (this.time == 0) {
+			this.cars.elementAt(0).add(new Car(this, 0, Car.MAX_SPEED));
 		}
 
 		// Then let each light make its decision
@@ -153,12 +133,19 @@ public class City {
 		
 		// For debugging: print out street 0
 		
-		for (int i = 0; i < cars.elementAt(0).size(); i++) {
-			System.err.println("Car on street 0: " + cars.elementAt(0).elementAt(i));
+		if ((int)(this.time * 10) == ((int)this.time) * 10) {
+
+			for (int i = 0; i < cars.elementAt(0).size(); i++) {
+				System.err.println("Car on street 0: " + cars.elementAt(0).elementAt(i));
+			}
+			for (int j = 0; j < stoplights.elementAt(0).size(); j++) {
+				System.err.println("Light on street 0 at street " + (2 * j + 1) + " is " + stoplights.elementAt(j).elementAt(0).getState(0));
+			}
+
 		}
-		for (int j = 0; j < stoplights.elementAt(0).size(); j++) {
-			System.err.println("Light on street 0 at street " + (2 * j + 1) + " is " + stoplights.elementAt(j).elementAt(0).getState(0));
-		}
+		
+		// Finally, increment time
+		this.time += TIME_STEP;
 		
 	}
 
@@ -181,7 +168,7 @@ public class City {
 		while (true) {
 			step();
 			try {
-				Thread.sleep(500);
+				Thread.sleep(50);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

@@ -37,9 +37,9 @@ public class Light {
 	
 	public double getPosition(int street) {
 		if (street == verticalStreet) {
-			return City.VERTICAL_STREET_LENGTH * ((((float)horizontalStreet) / 2) / this.city.HORIZONTAL_STREETS);
+			return City.VERTICAL_STREET_LENGTH * ((((float)horizontalStreet) / 2 + 1) / (this.city.HORIZONTAL_STREETS + 1));
 		} else if (street == horizontalStreet) {
-			return City.HORIZONTAL_STREET_LENGTH * ((((float)verticalStreet - 1) / 2) / this.city.VERTICAL_STREETS);
+			return City.HORIZONTAL_STREET_LENGTH * ((((float)verticalStreet - 1) / 2 + 1) / (this.city.VERTICAL_STREETS + 1));
 		} else {
 			System.err.println("Error: bad light access (1)");
 			return 0;
@@ -61,13 +61,13 @@ public class Light {
 		
 		counter++;
 		
-		if (counter == 12) {
+		if ((float)counter * City.TIME_STEP == 15) {
 			if (this.verticalState == LightState.GREEN) {
 				this.verticalState = LightState.YELLOW;
 			} else if (this.horizontalState == LightState.GREEN) {
 				this.horizontalState = LightState.YELLOW;
 			}
-		} else if (counter == 15) {
+		} else if ((float)counter * City.TIME_STEP == 20) {
 			if (this.verticalState == LightState.YELLOW) {
 				this.verticalState = LightState.RED;
 				this.horizontalState = LightState.GREEN; // eventually, some delay between red lights?
