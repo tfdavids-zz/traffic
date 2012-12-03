@@ -118,7 +118,11 @@ public class Car {
 	}
 	
 	public double getAverageSpeed() {
-		return this.position / this.time;
+		if (this.time > 0) {
+			return this.position / this.time;
+		} else {
+			return 0.0;
+		}
 	}
 
 	public City getCity() {

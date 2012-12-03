@@ -1,3 +1,5 @@
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Vector;
 
 
@@ -25,6 +27,12 @@ public class Light {
 
 		this.verticalStreet = verticalStreet;
 		this.horizontalStreet = horizontalStreet;
+
+		if (weights.size() == 0) {
+			for (int i = 0; i < NUM_FEATURES; i++) {
+				weights.add(0.0);
+			}
+		}
 	}
 
 	// Use these methods so we can keep track of when the light is using this information --
@@ -62,7 +70,7 @@ public class Light {
 	public void step() {
 
 		if (true) {
-			fixedLengthStep();
+			logisticRegressionStep();
 		}
 
 		/* TODO: Improve this method.
@@ -101,89 +109,119 @@ public class Light {
 
 	//// THOMAS' CODE \\\\
 
-	private static Vector<Double> weights;
-	private Vector<Vector<Double>> inputs;
+	private static Vector<Double> weights = new Vector<Double>();
+	private Vector<Vector<Double>> inputs = new Vector<Vector<Double>>();
 
-	private static final int LOOKAHEAD = 50;
+	private static final int LOOKAHEAD = 10;
 	private static final int YELLOW_LIGHT = 5;
+	private static final int MIN_GREEN_LIGHT = 5;
+	private static final int NUM_FEATURES = 7;
 
-	
+	private static final double ALPHA = 0.1;
+
+	private int yellowLightCounter = -1;
+	private int greenLightCounter = -1;
+
 	/**
 	 * @return A vector with the following features (in order):
 	 * - average vehicle speed in the green light direction
-	 * - average vehicle speed in the red light direction
 	 * - average squared vehicle speed in the green light direction
-	 * - average squared vehicle speed in the red light direction
 	 * - number of vehicles in the green light direction
 	 * - number of vehicles in the red light direction
+	 * - average squared vehicle speed in the red light direction
+	 * - average vehicle speed in the red light direction
 	 */
 	private Vector<Double> getCurrentState() {
 		Vector<Double> state = new Vector<Double>();
-		
+
+		state.add(city.getAverageSpeed(this, this.getVerticalStreet()));
+		state.add(city.getAverageSquaredSpeed(this, this.getVerticalStreet()));
+		state.add(city.getNumCars(this, this.getVerticalStreet()));
+		state.add(city.getNumCars(this, this.getHorizontalStreet()));
+		state.add(city.getAverageSquaredSpeed(this, this.getHorizontalStreet()));
+		state.add(city.getAverageSpeed(this, this.getHorizontalStreet()));
+
 		if (this.verticalState == LightState.GREEN) {
-			state.add(city.getAverageSpeed(this, this.getVerticalStreet()));
-			state.add(city.getAverageSpeed(this, this.getHorizontalStreet()));
-			state.add(city.getAverageSquaredSpeed(this, this.getVerticalStreet()));
-			state.add(city.getAverageSquaredSpeed(this, this.getHorizontalStreet()));
-			state.add(city.getNumCars(this, this.getVerticalStreet()));
-			state.add(city.getNumCars(this, this.getHorizontalStreet()));
+			// do nothing
 		} else if (this.horizontalState == LightState.GREEN) {
-			state.add(city.getAverageSpeed(this, this.getHorizontalStreet()));
-			state.add(city.getAverageSpeed(this, this.getVerticalStreet()));
-			state.add(city.getAverageSquaredSpeed(this, this.getHorizontalStreet()));
-			state.add(city.getAverageSquaredSpeed(this, this.getVerticalStreet()));
-			state.add(city.getNumCars(this, this.getHorizontalStreet()));
-			state.add(city.getNumCars(this, this.getVerticalStreet()));
+			Collections.reverse(state);
 		} else {
 			System.err.println("Error: taking features from a light in transition");
 		}
-		
+
 		return state;
 	}
 
 	private void logisticRegressionStep() {
+		if (yellowLightCounter >= 0) {
+			yellowLightCounter++;
 
-		if (counter >= 0) {
-			counter++;
-
-			if (counter >= YELLOW_LIGHT) {
+			if ((float)yellowLightCounter * City.TIME_STEP >= YELLOW_LIGHT) {
 				if (this.verticalState == LightState.YELLOW) {
 					this.verticalState = LightState.RED;
 					this.horizontalState = LightState.GREEN; // eventually, some delay between red lights?
+					greenLightCounter = 0;
 				} else if (this.horizontalState == LightState.YELLOW) {
 					this.horizontalState = LightState.RED;
 					this.verticalState = LightState.GREEN; // eventually, some delay between red lights?
+					greenLightCounter = 0;
 				}
 
-				counter = -1; // this will freeze it until we decide to switch
+				yellowLightCounter = -1; // this will freeze it until we decide to switch
+			}
+		} else if (greenLightCounter >= 0) {
+			greenLightCounter++;
+			if ((float)greenLightCounter * City.TIME_STEP >= MIN_GREEN_LIGHT) {
+				greenLightCounter = -1;
 			}
 		} else {
 			double didSwitch;
 
 			if (inputs.size() < LOOKAHEAD) {
-				didSwitch = -1.0; // TODO: use some heuristic to decide whether to switch here
+				didSwitch = 0.0;
 				Vector<Double> input = getCurrentState();
 				input.add(didSwitch);
 				inputs.add(input);
 			} else {
-				Vector<Double> currentState = getCurrentState();
-				double currentStateScore = 0.0;
+				Vector<Double> constantState = getCurrentState();
+				constantState.add(0.0);
+				double constantStateScore = 0.0;
 				for (int i = 0; i < weights.size(); i++) {
-					currentStateScore += weights.elementAt(i) * currentState.elementAt(i);
+					constantStateScore += weights.elementAt(i) * constantState.elementAt(i);
+				}
+				Vector<Double> switchedState = getCurrentState();
+				Collections.reverse(switchedState);
+				switchedState.add(1.0);
+				double switchedStateScore = 0.0;
+				for (int i = 0; i < weights.size(); i++) {
+					switchedStateScore += weights.elementAt(i) * switchedState.elementAt(i);
 				}
 
 				// get the last input and score it
 				Vector<Double> oldInputs = inputs.elementAt(0); inputs.removeElementAt(0);
 				double currentStateCost = city.getAverageAverageSpeed();
-				// TODO: update weights based on oldInputs and currentStateCost
+				double predictedCost = 0.0;
+				for (int i = 0; i < weights.size(); i++) {
+					predictedCost += weights.elementAt(i) * oldInputs.elementAt(i);
+				}
+				for (int i = 0; i < weights.size(); i++) {
+					double newValue = weights.elementAt(i) + ALPHA * (currentStateCost - predictedCost) * oldInputs.elementAt(i);
+					if (Double.isInfinite(newValue)) {
+						System.err.println("THE WORLD IS ENDING");
+					}
+					weights.setElementAt(newValue, i);
+				}
 
-				didSwitch = currentStateScore > 0 ? 1.0 : -1.0;
+				didSwitch = constantStateScore >= switchedStateScore ? 0.0 : 1.0;
+				Vector<Double> currentState = getCurrentState();
+				if (didSwitch == 1.0)
+					Collections.reverse(currentState);
 				currentState.add(didSwitch);
 				inputs.add(currentState);			
 			}
 
 			if (didSwitch == 1.0) {
-				counter = 0;
+				yellowLightCounter = 0;
 
 				if (this.verticalState == LightState.GREEN) {
 					this.verticalState = LightState.YELLOW;

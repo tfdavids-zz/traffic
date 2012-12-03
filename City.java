@@ -3,8 +3,8 @@ import java.util.*;
 public class City {
 	// EVEN STREETS ARE HORIZONTAL (0-indexed), ODD STREETS ARE VERTICAL
 
-	public static final int HORIZONTAL_STREETS = 2;
-	public static final int VERTICAL_STREETS = 2;
+	public static final int HORIZONTAL_STREETS = 1;
+	public static final int VERTICAL_STREETS = 1;
 
 	public static final double HORIZONTAL_STREET_LENGTH = 900.0; // in meters
 	public static final double VERTICAL_STREET_LENGTH = 900.0; // in meters
@@ -170,7 +170,7 @@ public class City {
 		}
 		
 		if (count > 0) {
-			return value / count;
+			return (value / count) / Car.MAX_SPEED;
 		} else {
 			return 0.0;
 		}
@@ -188,7 +188,7 @@ public class City {
 		}
 		
 		if (count > 0) {
-			return value / count;
+			return (value / count) / Math.pow(Car.MAX_SPEED, 2);
 		} else {
 			return 0.0;
 		}
@@ -219,7 +219,11 @@ public class City {
 			}
 		}
 		
-		return value / count;
+		if (count > 0) {
+			return (value / count) / Car.MAX_SPEED;
+		} else {
+			return 0.0;
+		}
 	}
 	
 	public void simulate() {
