@@ -156,6 +156,72 @@ public class City {
 		System.out.println("Removed car: " + car.toString());
 	}
 
+	// features
+	
+	public double getAverageSpeed(Light light, int street) {
+		double value = 0.0;
+		int count = 0;
+		
+		for (int i = 0; i < this.cars.elementAt(street).size(); i++) {
+			if (this.cars.elementAt(street).elementAt(i).getPosition() < light.getPosition(street)) {
+				count++;
+				value += this.cars.elementAt(street).elementAt(i).getSpeed();
+			}
+		}
+		
+		if (count > 0) {
+			return value / count;
+		} else {
+			return 0.0;
+		}
+	}
+	
+	public double getAverageSquaredSpeed(Light light, int street) {
+		double value = 0.0;
+		int count = 0;
+		
+		for (int i = 0; i < this.cars.elementAt(street).size(); i++) {
+			if (this.cars.elementAt(street).elementAt(i).getPosition() < light.getPosition(street)) {
+				count++;
+				value += Math.pow(this.cars.elementAt(street).elementAt(i).getSpeed(), 2);
+			}
+		}
+		
+		if (count > 0) {
+			return value / count;
+		} else {
+			return 0.0;
+		}
+	}
+	
+	public double getNumCars(Light light, int street) {
+		int count = 0;
+		
+		for (int i = 0; i < this.cars.elementAt(street).size(); i++) {
+			if (this.cars.elementAt(street).elementAt(i).getPosition() < light.getPosition(street)) {
+				count++;
+			}
+		}
+		
+		return (double)count;
+	}
+	
+	// cost function
+	
+	public double getAverageAverageSpeed() {
+		double value = 0.0;
+		int count = 0;
+		
+		for (int i = 0; i < this.cars.size(); i++) {
+			for (int j = 0; j < this.cars.elementAt(i).size(); j++) {
+				value += this.cars.elementAt(i).elementAt(j).getAverageSpeed();
+				count++;
+			}
+		}
+		
+		return value / count;
+	}
+	
 	public void simulate() {
 		while (true) {
 			step();
