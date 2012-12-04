@@ -16,6 +16,10 @@ public class City {
 	private Vector<Vector<Light>> stoplights; // first index of light is (vertical street - 1) / 2 (x-coord), second is (horizontal street / 2)
 
 	private double time;
+	
+	// for scoring
+	private double totalPosition = 0;
+	private double totalTime = 0;
 
 	Random rand = new Random();
 
@@ -105,14 +109,14 @@ public class City {
 					double x = rand.nextDouble();
 					if (x < CAR_GEN_PROB * TIME_STEP) {
 						this.cars.elementAt(street).add(new Car(this, street, firstCar.getSpeed()));
-						System.out.println("Added car: " + this.cars.elementAt(street).lastElement().toString());
+						//System.out.("Added car: " + this.cars.elementAt(street).lastElement().toString());
 					}
 				}
 			} else {
 				double x = rand.nextDouble();
 				if (x < CAR_GEN_PROB * TIME_STEP) {
 					this.cars.elementAt(street).add(new Car(this, street, Car.MAX_SPEED));
-					System.out.println("Added car: " + this.cars.elementAt(street).lastElement().toString());
+					//System.out.println("Added car: " + this.cars.elementAt(street).lastElement().toString());
 				}
 			}
 		}
@@ -125,6 +129,7 @@ public class City {
 		}
 
 		// For debugging: print out street 0
+		/*
 		if ((int)(this.time * 10) == ((int)this.time) * 10) {
 
 			for (int i = 0; i < cars.elementAt(0).size(); i++) {
@@ -135,6 +140,7 @@ public class City {
 			}
 
 		}
+		 */
 
 		// Finally, increment time
 		this.time += TIME_STEP;
@@ -153,7 +159,9 @@ public class City {
 
 	public void removeCar(Car car, int street) {
 		cars.elementAt(street).remove(car);
-		System.out.println("Removed car: " + car.toString());
+		//System.out.("Removed car: " + car.toString());
+		totalPosition += car.getPosition();
+		totalTime += car.getTime();
 	}
 
 	// features
@@ -227,14 +235,15 @@ public class City {
 	}
 	
 	public void simulate() {
-		while (true) {
+		for (int i = 0; i < 100000; i++) {
 			step();
-			try {
+			/*try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-			}
+			}*/
 			//System.err.println("Slept!");
 		}
+		System.out.println("Total score: " + (totalPosition / totalTime));
 	}
 }

@@ -70,7 +70,8 @@ public class Light {
 	public void step() {
 
 		if (true) {
-			logisticRegressionStep();
+			fixedLengthStep();
+			//randomLengthStep();
 		}
 
 		/* TODO: Improve this method.
@@ -107,7 +108,7 @@ public class Light {
 
 	}
 
-	//// THOMAS' CODE \\\\
+	//// code for linear regression \\\\
 
 	private static Vector<Double> weights = new Vector<Double>();
 	private Vector<Vector<Double>> inputs = new Vector<Vector<Double>>();
@@ -189,6 +190,7 @@ public class Light {
 				for (int i = 0; i < weights.size(); i++) {
 					constantStateScore += weights.elementAt(i) * constantState.elementAt(i);
 				}
+				
 				Vector<Double> switchedState = getCurrentState();
 				Collections.reverse(switchedState);
 				switchedState.add(1.0);
@@ -230,27 +232,6 @@ public class Light {
 				}
 			}
 		}
-
-		// features: average vert & horiz vehicle speed, average vert & horiz squared vehicle speed, vert & horiz num vehicles
-		// current state: a vector of these features
-		// weights: a vector with this length where each component corresponds to these features
-		// current state score: average average speed of every vehicle on the grid
-		// 
-
-		// if vector of priors is totally full
-
-		// currentState = this.getCurrentState()
-		// currentStateScore = this.getCurrentStateScore()
-		// input = vectorOfInputs.removeFirstElement()
-		// this.updateWeights(input, currentStateScore)
-
-
-		// decision = makeDecision(weights, currentState)
-		// vectorOfInputs.append(currentState, decision)
-
-		// if vector of priors is not full:
-
-		// just add the current state to the end of it
 	}
 
 	//// END OF THOMAS' CODE \\\\

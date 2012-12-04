@@ -124,6 +124,10 @@ public class Car {
 			return 0.0;
 		}
 	}
+	
+	public double getTime() {
+		return this.time;
+	}
 
 	public City getCity() {
 		return this.city;
