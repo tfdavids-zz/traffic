@@ -3,23 +3,23 @@ import java.util.*;
 public class City {
 	// EVEN STREETS ARE HORIZONTAL (0-indexed), ODD STREETS ARE VERTICAL
 
-	public static final int HORIZONTAL_STREETS = 1;
-	public static final int VERTICAL_STREETS = 1;
+	public static final int HORIZONTAL_STREETS = 2;
+	public static final int VERTICAL_STREETS = 2;
 
 	public static final double HORIZONTAL_STREET_LENGTH = 900.0; // in meters
 	public static final double VERTICAL_STREET_LENGTH = 900.0; // in meters
 
-	public static final double CAR_GEN_PROB = 0.10;
+	public static final double CAR_GEN_PROB = 0.30;
 	public static final double TIME_STEP = 0.1;
 
 	private Vector<Vector<Car>> cars;
 	private Vector<Vector<Light>> stoplights; // first index of light is (vertical street - 1) / 2 (x-coord), second is (horizontal street / 2)
-
-	private double time;
+	
+	private static final int REPS = 100000;
 	
 	// for scoring
-	private double totalPosition = 0;
-	private double totalTime = 0;
+	private double totalPosition;
+	private double totalTime;
 
 	Random rand = new Random();
 
@@ -37,8 +37,6 @@ public class City {
 				this.stoplights.elementAt(i).add(new Light(this, 2*i+1, 2*j));
 			}
 		}
-
-		this.time = 0;
 	}
 
 	/**
@@ -141,10 +139,6 @@ public class City {
 
 		}
 		 */
-
-		// Finally, increment time
-		this.time += TIME_STEP;
-
 	}
 
 	// Returns the car directly in front of this one, on the given street
@@ -234,16 +228,28 @@ public class City {
 		}
 	}
 	
-	public void simulate() {
-		for (int i = 0; i < 100000; i++) {
+	public double simulate(Light.LightMethod method) {
+		Light.method = method;
+		
+		this.cars = new Vector<Vector<Car>>();
+		for (int i = 0; i < HORIZONTAL_STREETS + VERTICAL_STREETS; i++) {
+			this.cars.add(new Vector<Car>());
+		}
+		
+		totalPosition = 0;
+		totalTime = 0;
+		
+		for (int i = 0; i < REPS; i++) {
 			step();
-			/*try {
+			/*
+			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-			}*/
-			//System.err.println("Slept!");
+			}
+			*/
 		}
-		System.out.println("Total score: " + (totalPosition / totalTime));
+		//System.out.println("Total score: " + (totalPosition / totalTime));
+		return totalPosition / totalTime;
 	}
 }

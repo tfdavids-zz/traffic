@@ -1,4 +1,3 @@
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Vector;
 
@@ -9,6 +8,12 @@ public class Light {
 		RED, YELLOW, GREEN;
 	}
 
+	public enum LightMethod {
+		CONSTANT, REGRESSION, RANDOM;
+	}
+	
+	public static LightMethod method;
+	
 	private LightState verticalState; 
 	private LightState horizontalState;
 
@@ -47,9 +52,9 @@ public class Light {
 
 	public double getPosition(int street) {
 		if (street == verticalStreet) {
-			return City.VERTICAL_STREET_LENGTH * ((((float)horizontalStreet) / 2 + 1) / (this.city.HORIZONTAL_STREETS + 1));
+			return City.VERTICAL_STREET_LENGTH * ((((float)horizontalStreet) / 2 + 1) / (City.HORIZONTAL_STREETS + 1));
 		} else if (street == horizontalStreet) {
-			return City.HORIZONTAL_STREET_LENGTH * ((((float)verticalStreet - 1) / 2 + 1) / (this.city.VERTICAL_STREETS + 1));
+			return City.HORIZONTAL_STREET_LENGTH * ((((float)verticalStreet - 1) / 2 + 1) / (City.VERTICAL_STREETS + 1));
 		} else {
 			System.err.println("Error: bad light access (1)");
 			return 0;
@@ -69,9 +74,12 @@ public class Light {
 
 	public void step() {
 
-		if (true) {
+		if (method == LightMethod.CONSTANT) {
 			fixedLengthStep();
-			//randomLengthStep();
+		} else if (method == LightMethod.REGRESSION) {
+			regressionStep();
+		} else if (method == LightMethod.RANDOM) {
+			randomLengthStep();
 		}
 
 		/* TODO: Improve this method.
@@ -118,7 +126,7 @@ public class Light {
 	private static final int MIN_GREEN_LIGHT = 5;
 	private static final int NUM_FEATURES = 7;
 
-	private static final double ALPHA = 0.1;
+	private static final double ALPHA = 0.001;
 
 	private int yellowLightCounter = -1;
 	private int greenLightCounter = -1;
@@ -153,7 +161,7 @@ public class Light {
 		return state;
 	}
 
-	private void logisticRegressionStep() {
+	private void regressionStep() {
 		if (yellowLightCounter >= 0) {
 			yellowLightCounter++;
 
@@ -209,7 +217,7 @@ public class Light {
 				for (int i = 0; i < weights.size(); i++) {
 					double newValue = weights.elementAt(i) + ALPHA * (currentStateCost - predictedCost) * oldInputs.elementAt(i);
 					if (Double.isInfinite(newValue)) {
-						System.err.println("THE WORLD IS ENDING");
+						System.err.println("Error: infinite weights");
 					}
 					weights.setElementAt(newValue, i);
 				}
