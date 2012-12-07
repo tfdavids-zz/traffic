@@ -9,7 +9,7 @@ public class City {
 	public static final double HORIZONTAL_STREET_LENGTH = 900.0; // in meters
 	public static final double VERTICAL_STREET_LENGTH = 900.0; // in meters
 
-	public static final double CAR_GEN_PROB = 0.30;
+	public static final double CAR_GEN_PROB = 0.10;
 	public static final double TIME_STEP = 0.1;
 
 	private Vector<Vector<Car>> cars;
@@ -240,6 +240,7 @@ public class City {
 		totalTime = 0;
 		
 		for (int i = 0; i < REPS; i++) {
+			
 			step();
 			/*
 			try {
@@ -250,6 +251,7 @@ public class City {
 			*/
 		}
 		//System.out.println("Total score: " + (totalPosition / totalTime));
+		
 		return totalPosition / totalTime;
 	}
 }

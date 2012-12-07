@@ -126,7 +126,7 @@ public class Light {
 	private static final int MIN_GREEN_LIGHT = 5;
 	private static final int NUM_FEATURES = 7;
 
-	private static final double ALPHA = 0.001;
+	private static final double ALPHA = 0.01;
 
 	private int yellowLightCounter = -1;
 	private int greenLightCounter = -1;
