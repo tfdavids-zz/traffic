@@ -15,7 +15,7 @@ public class City {
 	private Vector<Vector<Car>> cars;
 	private Vector<Vector<Light>> stoplights; // first index of light is (vertical street - 1) / 2 (x-coord), second is (horizontal street / 2)
 	
-	private static final int REPS = 100000;
+	private static final int REPS = 10000;
 	
 	// for scoring
 	private double totalPosition;
@@ -253,5 +253,10 @@ public class City {
 		//System.out.println("Total score: " + (totalPosition / totalTime));
 		
 		return totalPosition / totalTime;
+	}
+	
+	public void resetCounter() {
+		totalPosition = 0;
+		totalTime = 0;
 	}
 }
