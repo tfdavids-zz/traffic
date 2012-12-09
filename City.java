@@ -240,17 +240,8 @@ public class City {
 		totalTime = 0;
 		
 		for (int i = 0; i < REPS; i++) {
-			
 			step();
-			/*
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			*/
 		}
-		//System.out.println("Total score: " + (totalPosition / totalTime));
 		
 		return totalPosition / totalTime;
 	}

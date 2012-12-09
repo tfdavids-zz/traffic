@@ -39,8 +39,7 @@ public class Light {
 			}
 		}
 		
-		
-			setupFVI();	
+		setupFVI();	
 		
 	}
 
@@ -87,12 +86,6 @@ public class Light {
 		} else if (method == LightMethod.FVI) {
 			fittedValueIterationStep();
 		}
-
-		/* TODO: Improve this method.
-		 * This method is the most important part of the project -- it is
-		 * where the light decides whether or not it changes colors. For now,
-		 * the light just uses a simple counter, and changes every 15 steps.
-		 */
 
 	}
 
@@ -202,7 +195,7 @@ public class Light {
 	
 	/* Find the As using the timeSeries. */
 	private void findAs() {
-		System.out.println("Find As!");
+		//System.out.println("Find As!");
 		for(int a = 0; a < 4; a ++) {
 			Double[][] A = As.get(a);
 			Vector<Vector<Vector<Double>>> trainingExamples = timeSeriesByLightState.get(a);
@@ -284,7 +277,7 @@ public class Light {
 	}
 	
 	private Vector<Double[]> findThetas() {
-		System.out.println("Find Thetas!");
+		//System.out.println("Find Thetas!");
 		Vector<Double[]> thetas = new Vector<Double[]>();
 		
 		for(int a = 0; a < 4; a ++) {
@@ -366,7 +359,7 @@ public class Light {
 	
 	/* One step using the fitted value iteration reinforcement learning model. */
 	private void fittedValueIterationStep() {
-		System.out.println("FVI step #" + FVIcounter);
+		//System.out.println("FVI step #" + FVIcounter);
 		
 		Vector<Double> currentState = getFVIState();
 		
@@ -471,12 +464,12 @@ public class Light {
 	private static Vector<Double> weights = new Vector<Double>();
 	private Vector<Vector<Double>> inputs = new Vector<Vector<Double>>();
 
-	private static final int LOOKAHEAD = 10;
+	private static final int LOOKAHEAD = 20;
 	private static final int YELLOW_LIGHT = 5;
-	private static final int MIN_GREEN_LIGHT = 5;
+	private static final int MIN_GREEN_LIGHT = 2;
 	private static final int NUM_FEATURES = 7;
 
-	private static final double ALPHA = 0.01;
+	private static final double ALPHA = 0.1;
 
 	private int yellowLightCounter = -1;
 	private int greenLightCounter = -1;
