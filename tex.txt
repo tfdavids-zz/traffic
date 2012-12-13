@@ -58,9 +58,9 @@ Americans spend, on average, between 30 and 40 hours per year in traffic. Some o
 
 To model the road, we use the Intelligent Driver Model. First developed in 2000 by Treiber, Hennecke and Helbing, it models the behavior of individual cars in traffic with the formula
 
-$$$$
+$$\frac{dv_\alpha}{dt}=a\left(1-\left(\frac{v_\alpha}{v_0}\right)^4-\left(\frac{s^\star\left(v_\alpha,\Delta v_\alpha\right)}{s_\alpha}\right)^2\right)$$
 
-We use the parameters $v_0=30$, $T=1.5$, $a=1.00$, $b=3.00$, and $s_0=2$. Our traffic simulator models a grid of streets in a city, and generates cars with a fixed probability of appearing which behave according to this model. Our model has stoplights at each intersection to control traffic, and it is these stoplights to which we apply our learning algorithms. \\
+where $s^\star\left(v_\alpha,\Delta v_\alpha\right)=s_0+v_\alpha T+\frac{v_\alpha \Delta v_\alpha}{2\sqrt{ab}}$. We use the parameters $v_0=30$, $T=1.5$, $a=1.00$, $b=3.00$, and $s_0=2$. Our traffic simulator models a grid of streets in a city, and generates cars with a fixed probability of appearing which behave according to this model. Our model has stoplights at each intersection to control traffic, and it is these stoplights to which we apply our learning algorithms. \\
 
 \textbf{Linear Regression}\\
 
@@ -108,6 +108,16 @@ We will find $\{A_{l}\}$ and $\{B_{l}\}$ by running linear regression on trainin
 
 Finally, we sought a value function of the form $V(S) = \theta^{T}\cdot S$ for $\theta$ a $6 \times 1$ vector. As with the update matrices $A_{l}$ and $B_{l}$, we find four vectors $\theta_{1},\, \theta_{2},\, \theta_{3},\,\text{and}\,\theta_{4}$ corresponding the the different values of $l$. Thus, $V(S_{t}) = \theta_{l}^{T}\cdot S_{t}$ where the light-state of $S_{t}$ is $l$. These $\theta$'s were found using fitted value iteration, treating $l = 1,\,2,\,3,\,4$ separately.\\
 
-The indexing of value functions by $l$ changes fitted value iteration in one potentially fatal way. Bellman's equations rely on the assumption that in all future states, the action that optimizes the expectation of the value function $V$ will be taken. For $l = 1\text{ or } 2$ this is explicitly not the case as we require $a = 0$ in these cases. Furthermore, for $l = 0 \text{ or } 3$, corresponding to the light-states red/green and green/red respectively, we require that $a = 0$ for at least 5 times steps of our simulator before we allow $a = 1$, regardless of this being the best action according to our calculations. Thus, Bellman's equations do not apply exactly. Our hope is that they capture reality sufficiently well for us to approximate $V$. 
+The indexing of value functions by $l$ changes fitted value iteration in one potentially fatal way. Bellman's equations rely on the assumption that in all future states, the action that optimizes the expectation of the value function $V$ will be taken. For $l = 1\text{ or } 2$ this is explicitly not the case as we require $a = 0$ in these cases. Furthermore, for $l = 0 \text{ or } 3$, corresponding to the light-states red/green and green/red respectively, we require that $a = 0$ for at least 5 times steps of our simulator before we allow $a = 1$, regardless of this being the best action according to our calculations. Thus, Bellman's equations do not apply exactly. Our hope is that they capture reality sufficiently well for us to approximate $V$.\\
+
+\textbf{Conclusion}\\
+
+While it was disappointing that our FVI algorithm failed to converge, the results of our linear regression are very encouraging. Saving over 7 meters per second on a baseline of 10 meters per second is a very significant gain. Furthermore, this algorithm, once learned, can be applied on a very basic level; a light simply needs to use the available information to make a decision, and no new data needs to be collected.\\
+
+A couple of options are available for future steps. One interesting option would be to experiment with a different number of features; using a larger feature set would probably improve the model, but a smaller feature set might better approximate real-world situations, when a light might only know whether at least one car is waiting at the light.\\
+
+Another option would be to use some method to discretize the data. As mentioned before, some of our problems with the FVI algorithm came from the fact that continuous FVIs are less reliable than discrete ones. If we were to use a clustering algorithm such as K-means to model the state space as finite, this would improve that method and hopefully open up a whole new set of options.\\
+
+Overall, although we suffered some setbacks along the way, we are very optimistic about the results of this project. Although there remains a lot of work to be done before it is ready to be put into practice, we are hopeful that methods such as these could eventually cut into some of those 30 to 40 hours spent in traffic.\\
 
 \end{document}
