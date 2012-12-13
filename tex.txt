@@ -1,0 +1,109 @@
+\documentclass[11pt,leqno,twoside]{article}
+\usepackage{amsmath,amssymb,fancyhdr,enumerate}
+
+
+%pagedimensions
+\setlength\textwidth{6.0truein}   
+\setlength\oddsidemargin{0.25truein}   
+\setlength\evensidemargin{0.25truein}       
+\setlength\textheight{9.0truein}   
+\setlength\footskip{0.45truein}   
+\setlength\parindent{0truein}
+\setlength\parskip{3pt}
+\renewcommand\headrulewidth{0pt}
+
+%"state" environment (for statements of theorems)
+\newcommand{\prelemskip}{\vskip 5pt plus 1.5pt minus 1.5pt}
+\newcommand{\postlemskip}{\vskip 4.5pt plus 1pt minus 0.5pt} 
+\newenvironment{state}[1]{\par\prelemskip\noindent {\bf#1} % 
+\textit\bgroup\abovedisplayskip=5pt plus 3pt minus 1pt \belowdisplayskip=5pt plus 3pt minus 1pt}%  
+{\egroup \par\ifdim\lastskip<\medskipamount \removelastskip\penalty55\postlemskip\fi}  
+
+
+\parindent0pt
+\def\vlimsup{\mathop{\vphantom{\underline{}}\overline{\rm lim}}}
+\def\vliminf{\mathop{\underline{\rm lim}}}
+\def\ind#1{\hskip.5truein \hbox to .27truein{#1\hfil} \hangindent0.5truein}
+\def\fr #1/#2{{\textstyle\frac{#1}{#2}}}
+\def\R{\mathbb{R}}  \def\Q{\mathbb{Q}}  
+\def\C{\mathbb{C}} \def\Z{\mathbb{Z}} \def\N{\mathbb{N}} 
+
+\newcommand{\op}[1]{\operatorname{\text{\rm #1}}} 
+
+
+\pagestyle{fancy} \fancyfoot[LRC]{} \fancyhead[CE]{\footnotesize\scshape CS 229\,\, 2012} \fancyhead[RO]{\footnotesize\thepage}
+\fancyhead[LE]{\footnotesize\thepage} \fancyhead[LO]{} \fancyhead[RE]{}
+\fancyhead[CO]{\footnotesize\scshape CS 229\,\, 2012}
+
+
+
+
+\author{}
+
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+
+
+\begin{document}
+
+\textbf{Michael Celentano, Thomas Davids, Luke Knepper\\
+Final Report\\
+CS 229\\
+December 14, 2012}\\
+\\
+
+\textbf{Problem}\\
+
+Americans spend, on average, XXX hours per year in traffic. Some of this is simply due to too many cars on the road; however, much of this delay is caused by inefficient stoplights. Imagine if stoplights were intelligent; if they could look at incoming traffic in every direction, and make the best decision in order to minimize the delay for all drivers. Our project attempts to do exactly that.\\
+
+To model the road, we use the Intelligent Driver Model. First developed in 2000 by Treiber, Hennecke and Helbing, it models the behavior of individual cars in traffic. Our traffic simulator models a grid of streets in a city, and generates cars with a fixed probability of appearing which behave according to this model. For the model, we use the parameters XXX. Our model has stoplights at each intersection to control traffic, and it is these stoplights to which we apply our learning algorithms. \\
+
+\textbf{Linear Regression}\\
+
+Our first approach involved implementing a linear regression algorithm. Our feature vectors $x^{(i)}$ consisted of seven elements: the number of cars approaching the light on each street, the average speed of those cars (normalized by the speed limit), and the average squared speed of those cars (normalized by the square of the speed limit), as well as a binary variable that was equal to one if the light decided to switch, and zero otherwise. A seven-dimensional weight vector $\theta$ was also stored, and the value of $\theta^{T}x^{(i)}$ represented the prediction of the average speed of the system after a given number of time steps. This value would give the decision: if the value was higher for the switched state than the constant state, the light would switch; otherwise, it would remain constant.\\
+
+The weight vector was learned using stochastic gradient descent for linear regression: we used the formula
+$$\theta := \theta + \alpha \left(y^{(i)}-h_\theta(x^{(i)})\right)x^{(i)}$$
+with parameter $\alpha=0.001$ and $h_\theta(x^{(i)})=\theta^{T}x^{(i)}$. This updated value of $\theta$ was then used to make the decision for the next step of the light.\\
+
+After running our algorithm through $1,000,000$ time steps, we converged on a value of $\theta$ of approximately $$\left(\begin{array}{c}
+0.3820\\ 
+0.0831\\
+0.0388\\
+-0.0090\\
+-0.0133\\
+0.0412\\
+0.0805
+\end{array}\right)$$
+where the elements represent, in order: the number of cars on the street which is currently green or will be green soonest, the normalized average squared speed on that street, the normalized average speed on that street, the normalized average speed on the perpendicular street, the normalized average squared speed on the perpendicular street, and the number of cars on the perpendicular street.\\
+
+While being run, this algorithm reduced the total average travel time (total distance traveled by cars in the system divided by total time traveled by cars in the system) by $1.8380$ meters per second. More impressively, however, when these weights were hard-coded and used to run make the decisions without learning, this algorithm reduced total average travel time by up to $7.8455$ meters per second.\\
+
+%$0.3820357630506505, 0.08312630688930392, 0.03879866966691007, -0.009008062075713244, -0.013287962019461756, 0.04121574263074275, 0.08053497462507155$
+
+\textbf{Continuous State MDP}\\
+
+Our second approach involved implementing a continuous state MDP. In our algorithm, each light learns and makes decisions independently of the others, with any correlation between their decisions arising only through their responding to the same road. For the sake of simplicity, each light will only consider information describing the two roads meeting at its location. In particular, the state space any given light considers is parameterized by the following variables:\\
+
+\begin{itemize}
+\item A 6-dimensional vector $S$, with $s_{1}$ the number of cars on the vertical street, $s_{2}$ the average of their instantaneous speeds, and $s_{3}$ the sum of their instantaneous speeds. Components $s_{4}$ through $s_{6}$ contain the same information but for the horizontal street.
+
+\item A variable $l\in{0,1,2,3}$ describing the state of the light. The possible states of the light on the horizontal/vertical street are red/green, red/yellow, yellow/red, and green/red. These correspond to $l = 0,\,1,\,2,\,3$ respectively.
+
+\end{itemize}
+
+The set of actions a light can take at any given point in time, described by the binary variable $a$,  are to not change ($a = 0$), or to change ($a = 1$). We require that $a = 0$ when the light is in state red/yellow or yellow/red ($l = 1,\,2$), and for five simulation steps after the beginning of the state either being in state red/green or green/red to avoid potentially erratic behavior. This design decision was made preemptively, prior to any observation of such erratic behavior arising from our algorithm or indication that it would.\\
+
+A discount factor $\lambda = .95$ was used.\\
+
+The reward function $R(S)$ was given by the average speed of cars on the two roads meeting at a given light. More precisely, $R(S) = \frac{s_{3}+s_{6}}{s_{1}+s_{4}}$. Thus each light tries to maximize the average speed of lights on the two roads it sees, even though the ultimate goal is to maximize the average speed across all streets. If the streets are empty, the average speed is undefined, so we set $R = 50$. This is a high value because empty streets suggest efficient flow of traffic.\\
+ 
+To approximate a state update function, we sought a deterministic model in which $S_{t+1} = A\cdot S_{t} + B\cdot a$ where $A$ is a $6\times6$ matrix and $B$ a $6\times1$ matrix. Because we expect the update rule to depend upon the state of the light $l$, we would like to include this information in our model. But because $l$ acts as an index of light states, it is unlikely that the dependence of our model on $l$ is linear or can be expected to follow a simple mathematical relation that could be reliably applied to several scenarios. Thus, we seek not one update matrix $A$ and one matrix $B$, but 4 such matrices $A_{1},\,A_{2},\,A_{3},\,A_{4}$ and $B_{1},\,B_{2},\,B_{3},\,B_{4}$. We will apply each matrix depending on what our light-state is at any given moment.\\
+
+We will find $\{A_{l}\}$ and $\{B_{l}\}$ by running linear regression on training data of the form $\{S_{t} \longrightarrow S_{t+1}\}$ gathered throughout the running of our simulator. $A_{l}$ and $B_{l}$ will be found only use training examples for which $S_{t}$ was in light-state $l$ (the light-state of $S_{t+1}$ is not considered or predicted). This requires a significant amount of training data, in particular because enough data must be gathered for the more uncommon states $l = 1\, \text{or}\, 2$, corresponding to the red/yellow and yellow/red light-states respectively. We required 50 training examples of each type before beginning to attempt linear regression to find any of the matrices.\\
+
+Finally, we sought a value function of the form $V(S) = \theta^{T}\cdot S$ for $\theta$ a $6 \times 1$ vector. As with the update matrices $A_{l}$ and $B_{l}$, we find four vectors $\theta_{1},\, \theta_{2},\, \theta_{3},\,\text{and}\,\theta_{4}$ corresponding the the different values of $l$. Thus, $V(S_{t}) = \theta_{l}^{T}\cdot S_{t}$ where the light-state of $S_{t}$ is $l$. These $\theta$'s were found using fitted value iteration, treating $l = 1,\,2,\,3,\,4$ separately.\\
+
+The indexing of value functions by $l$ changes fitted value iteration in one potentially fatal way. Bellman's equations rely on the assumption that in all future states, the action that optimizes the expectation of the value function $V$ will be taken. For $l = 1\text{ or } 2$ this is explicitly not the case as we require $a = 0$ in these cases. Furthermore, for $l = 0 \text{ or } 3$, corresponding to the light-states red/green and green/red respectively, we require that $a = 0$ for at least 5 times steps of our simulator before we allow $a = 1$, regardless of this being the best action according to our calculations. Thus, Bellman's equations do not apply exactly. Our hope is that they capture reality sufficiently well for us to approximate $V$. 
+
+\end{document}
