@@ -15,7 +15,7 @@ public class City {
 	private Vector<Vector<Car>> cars;
 	private Vector<Vector<Light>> stoplights; // first index of light is (vertical street - 1) / 2 (x-coord), second is (horizontal street / 2)
 	
-	private static final int REPS = 10000;
+	private static int REPS = 1000000;
 	
 	// for scoring
 	private double totalPosition;
@@ -230,6 +230,9 @@ public class City {
 	
 	public double simulate(Light.LightMethod method) {
 		Light.method = method;
+		if (method == Light.LightMethod.FVI) {
+			REPS = 10000; // FVI takes too long to do 1000000 reps
+		}
 		
 		this.cars = new Vector<Vector<Car>>();
 		for (int i = 0; i < HORIZONTAL_STREETS + VERTICAL_STREETS; i++) {
