@@ -54,9 +54,13 @@ December 14, 2012}\\
 
 \textbf{Problem}\\
 
-Americans spend, on average, XXX hours per year in traffic. Some of this is simply due to too many cars on the road; however, much of this delay is caused by inefficient stoplights. Imagine if stoplights were intelligent; if they could look at incoming traffic in every direction, and make the best decision in order to minimize the delay for all drivers. Our project attempts to do exactly that.\\
+Americans spend, on average, between 30 and 40 hours per year in traffic. Some of this is simply due to too many cars on the road; however, much of this delay is caused by inefficient stoplights. Imagine if stoplights were intelligent; if they could look at incoming traffic in every direction, and make the best decision in order to minimize the delay for all drivers. Our project attempts to do exactly that.\\
 
-To model the road, we use the Intelligent Driver Model. First developed in 2000 by Treiber, Hennecke and Helbing, it models the behavior of individual cars in traffic. Our traffic simulator models a grid of streets in a city, and generates cars with a fixed probability of appearing which behave according to this model. For the model, we use the parameters XXX. Our model has stoplights at each intersection to control traffic, and it is these stoplights to which we apply our learning algorithms. \\
+To model the road, we use the Intelligent Driver Model. First developed in 2000 by Treiber, Hennecke and Helbing, it models the behavior of individual cars in traffic with the formula
+
+$$$$
+
+We use the parameters $v_0=30$, $T=1.5$, $a=1.00$, $b=3.00$, and $s_0=2$. Our traffic simulator models a grid of streets in a city, and generates cars with a fixed probability of appearing which behave according to this model. Our model has stoplights at each intersection to control traffic, and it is these stoplights to which we apply our learning algorithms. \\
 
 \textbf{Linear Regression}\\
 
@@ -75,9 +79,9 @@ After running our algorithm through $1,000,000$ time steps, we converged on a va
 0.0412\\
 0.0805
 \end{array}\right)$$
-where the elements represent, in order: the number of cars on the street which is currently green or will be green soonest, the normalized average squared speed on that street, the normalized average speed on that street, the normalized average speed on the perpendicular street, the normalized average squared speed on the perpendicular street, and the number of cars on the perpendicular street.\\
+where the elements represent, in order: the number of cars on the street which is currently green or will be green soonest, the normalized average squared speed on that street, the normalized average speed on that street, the normalized average speed on the perpendicular street, the normalized average squared speed on the perpendicular street, the number of cars on the perpendicular street, and the binary variable indicating whether a switch has just occurred.\\
 
-While being run, this algorithm reduced the total average travel time (total distance traveled by cars in the system divided by total time traveled by cars in the system) by $1.8380$ meters per second. More impressively, however, when these weights were hard-coded and used to run make the decisions without learning, this algorithm reduced total average travel time by up to $7.8455$ meters per second.\\
+While being run, this algorithm reduced the total average travel time (total distance traveled by cars in the system divided by total time traveled by cars in the system) by $1.9962$ meters per second. More impressively, however, when these weights were hard-coded and used to run make the decisions without learning, this algorithm reduced total average travel time by up to $7.8455$ meters per second.\\
 
 %$0.3820357630506505, 0.08312630688930392, 0.03879866966691007, -0.009008062075713244, -0.013287962019461756, 0.04121574263074275, 0.08053497462507155$
 
