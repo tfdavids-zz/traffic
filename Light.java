@@ -123,6 +123,7 @@ public class Light {
 	}
 	
 	private void weightedStep() {
+		// weights were calculated using results of linear regression
 		weights = new Vector<Double>(Arrays.asList(0.3820357630506505, 0.08312630688930392, 0.03879866966691007, -0.009008062075713244, -0.013287962019461756, 0.04121574263074275, 0.08053497462507155));
 		
 		if (yellowLightCounter >= 0) {
