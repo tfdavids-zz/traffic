@@ -21,7 +21,7 @@ public class Car {
 	public String toString() {
 		return "Car [street=" + street + ", speed=" + speed + ", position="
 				+ position + ", city=" + city + "]";
-		//return "Car [street=" + street + ", average_speed=" + (position / steps) + "]";
+		// return "Car [street=" + street + ", average_speed=" + (position / steps) + "]";
 	}
 
 	public Car(City city, int street, double speed) {
@@ -33,17 +33,6 @@ public class Car {
 	}
 
 	public void step() {		
-		// First, advance by the amount of the car's speed
-		position += speed * City.TIME_STEP;
-
-		// If this takes us beyond the edge of the city, remove the car
-		if (street % 2 == 0 && position > City.HORIZONTAL_STREET_LENGTH) {
-			city.removeCar(this, street);
-		} else if (street % 2 == 1 && position > City.VERTICAL_STREET_LENGTH) {
-			city.removeCar(this, street);
-		}
-
-		// Now figure out where the next car and next light are
 		Car nextVehicle = getLeader();
 		Light nextLight = city.getNextLight(street, position, speed);
 		double nextLightPosition = 0; // will get set if it gets used
@@ -51,6 +40,31 @@ public class Car {
 			nextLightPosition = nextLight.getPosition(street);
 		}
 
+		// First, advance by the amount of the car's speed
+        // However, if this would take us into another vehicle or into a red light, stop
+        if (nextVehicle != null && nextVehicle.getPosition() - VEHICLE_LEN - JAM_DIST - position < speed * City.TIME_STEP) {
+            position = nextVehicle.getPosition() - VEHICLE_LEN - JAM_DIST;
+        } else if (nextLight != null && nextLightPosition - position < speed * City.TIME_STEP) {
+            position = nextLightPosition;
+        } else {
+		    position += speed * City.TIME_STEP;
+        }
+
+		// If this takes us beyond the edge of the city, remove the car
+		if (street % 2 == 0 && position > City.HORIZONTAL_STREET_LENGTH) {
+			city.removeCar(this, street);
+		} else if (street % 2 == 1 && position > City.VERTICAL_STREET_LENGTH) {
+			city.removeCar(this, street);
+		}
+/*
+		// Now figure out where the next car and next light are
+		Car nextVehicle = getLeader();
+		Light nextLight = city.getNextLight(street, position, speed);
+		double nextLightPosition = 0; // will get set if it gets used
+		if (nextLight != null) {
+			nextLightPosition = nextLight.getPosition(street);
+		}
+*/
 		/* Four cases: we can't see either a car or a light, we can see just a car,
 		 * we can see just a light, or we can see both.
 		 */
@@ -135,6 +149,7 @@ public class Car {
 
 	// get the car in front of this one
 	private Car getLeader() {
+        
 		return this.city.getLeader(this, street);
 	}
 

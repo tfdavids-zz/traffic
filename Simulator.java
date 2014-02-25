@@ -5,9 +5,9 @@ public class Simulator {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		City city = new City();
+		City city = new GraphicsCity();
 		double constant = city.simulate(Light.LightMethod.CONSTANT);
-		city = new City();
+		city = new GraphicsCity();
 		double regression = city.simulate(Light.LightMethod.REGRESSION);
 		//city = new City();
 		//double fvi = city.simulate(Light.LightMethod.FVI);

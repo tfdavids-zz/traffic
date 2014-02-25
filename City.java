@@ -12,7 +12,7 @@ public class City {
 	public static final double CAR_GEN_PROB = 0.10;
 	public static final double TIME_STEP = 0.1;
 
-	private Vector<Vector<Car>> cars;
+	protected Vector<Vector<Car>> cars;
 	private Vector<Vector<Light>> stoplights; // first index of light is (vertical street - 1) / 2 (x-coord), second is (horizontal street / 2)
 	
 	private static int REPS = 1000000;
@@ -144,8 +144,8 @@ public class City {
 	// Returns the car directly in front of this one, on the given street
 	public Car getLeader(Car car, int street) {
 		int index = cars.elementAt(street).indexOf(car);
-		if (index < cars.elementAt(street).size() - 1) {
-			return cars.elementAt(street).elementAt(index + 1);
+		if (index > 0) {
+			return cars.elementAt(street).elementAt(index - 1);
 		} else {
 			return null;
 		}
