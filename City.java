@@ -23,7 +23,7 @@ public class City {
 
 	Random rand = new Random();
 
-	public City () {
+	public City (Light.LightMethod method) {
 
 		this.cars = new Vector<Vector<Car>>();
 		for (int i = 0; i < HORIZONTAL_STREETS + VERTICAL_STREETS; i++) {
@@ -34,7 +34,15 @@ public class City {
 		for (int i = 0; i < VERTICAL_STREETS; i++) {
 			this.stoplights.add(new Vector<Light>());
 			for (int j = 0; j < HORIZONTAL_STREETS; j++) {
-				this.stoplights.elementAt(i).add(new Light(this, 2*i+1, 2*j));
+                switch (method) {
+                    case CONSTANT:
+				        this.stoplights.elementAt(i).add(new ConstantLight(this, 2*i+1, 2*j));
+                        break;
+                    case REGRESSION:
+				        this.stoplights.elementAt(i).add(new RegressionLight(this, 2*i+1, 2*j));
+                    default:
+                        break;
+                }
 			}
 		}
 	}
@@ -228,12 +236,8 @@ public class City {
 		}
 	}
 	
-	public double simulate(Light.LightMethod method) {
-		Light.method = method;
-		if (method == Light.LightMethod.FVI) {
-			REPS = 10000; // FVI takes too long to do 1000000 reps
-		}
-		
+	public double simulate() {
+
 		this.cars = new Vector<Vector<Car>>();
 		for (int i = 0; i < HORIZONTAL_STREETS + VERTICAL_STREETS; i++) {
 			this.cars.add(new Vector<Car>());
