@@ -9,7 +9,8 @@ abstract class Light {
 	}
 
 	public enum LightMethod {
-		CONSTANT, REGRESSION, RANDOM, FVI, WEIGHTED; // FVI = fitted value iteration, WEIGHTED uses results of linear regression
+        // FVI = fitted value iteration, WEIGHTED uses results of linear regression
+		CONSTANT, REGRESSION, RANDOM, FVI, WEIGHTED, WAITING; 
 	}
 
 	public static LightMethod method;

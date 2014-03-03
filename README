@@ -2,5 +2,5 @@ Traffic model from http://en.wikipedia.org/wiki/Intelligent_driver_model
 
 Usage:
 
-Thomass-MacBook-Air-2:Traffic tdavids$ javac -cp '.:acm.jar' Simulator.java
-Thomass-MacBook-Air-2:Traffic tdavids$ java -cp '.:acm.jar' Simulator
+$ make
+$ java -cp '.:acm.jar' Simulator

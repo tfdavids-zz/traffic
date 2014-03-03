@@ -40,6 +40,10 @@ public class City {
                         break;
                     case REGRESSION:
 				        this.stoplights.elementAt(i).add(new RegressionLight(this, 2*i+1, 2*j));
+                        break;
+                    case WAITING:
+                        this.stoplights.elementAt(i).add(new WaitingRegressionLight(this, 2*i+1, 2*j));
+                        break;
                     default:
                         break;
                 }
@@ -203,6 +207,21 @@ public class City {
 			return 0.0;
 		}
 	}
+
+    public double getNumWaitingCars(Light light, int street) {
+        int count = 0;
+
+        for (int i = 0; i < this.cars.elementAt(street).size(); i++) {
+            if (this.cars.elementAt(street).elementAt(i).getSpeed() <= 5.0 && // TODO: 5.0 is arbitrary
+                this.cars.elementAt(street).elementAt(i).getPosition() <= light.getPosition(street) &&
+                this.cars.elementAt(street).elementAt(i).getPosition() >= light.getPosition(street) - this.getBlockLength(street))
+            {
+                count++;
+            }
+        }
+
+        return (double)count;
+    }
 	
 	public double getNumCars(Light light, int street) {
 		int count = 0;
@@ -257,4 +276,20 @@ public class City {
 		totalPosition = 0;
 		totalTime = 0;
 	}
+
+    public double getHorizontalBlockLength() {
+        return HORIZONTAL_STREET_LENGTH / (VERTICAL_STREETS + 1);
+    }
+
+    public double getVerticalBlockLength() {
+        return VERTICAL_STREET_LENGTH / (HORIZONTAL_STREETS + 1);
+    }
+
+    public double getBlockLength(int street) {
+        if (street % 2 == 0) {
+            return this.getHorizontalBlockLength();
+        } else {
+            return this.getVerticalBlockLength();
+        }
+    }
 }
